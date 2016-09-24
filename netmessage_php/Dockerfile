@@ -1,0 +1,4 @@
+FROM php:5.6.6-fpm
+
+EXPOSE 80
+EXPOSE 6379

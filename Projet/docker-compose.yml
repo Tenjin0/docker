@@ -1,0 +1,17 @@
+version: "2"
+services:
+  front:
+     image: nginx
+     ports:
+         - "80:80"
+     links:
+         - "php"
+     volumes:
+         - "./:/var/www/project:ro"
+         - "./docker/front/default.conf:/etc/nginx/conf.d/default.conf:ro"
+
+  php:
+     image: php:7.0-fpm
+     volumes:
+         - ".:/var/www/project:rw"
+         - "./docker/php-7.0/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro"

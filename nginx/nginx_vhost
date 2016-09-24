@@ -1,0 +1,50 @@
+user  www-data www-data;
+worker_processes  1;
+
+events {
+    worker_connections  1024;
+    # worker_processes and worker_connections allows you to calculate maxclients value:
+    # max_clients = worker_processes * worker_connections
+}
+
+http {
+    default_type  application/octet-stream;
+
+    sendfile        off;
+    # If serving locally stored static files, sendfile is essential to speed up the server,
+    # But if using as reverse proxy one can deactivate it
+
+
+    keepalive_timeout  65;
+    # timeout during which a keep-alive client connection will stay open.
+
+    access_log  /var/log/extranet.netmessage.lan.access.log;
+    error_log   /var/log/extranet.netmessage.lan.error.log;
+
+    server {
+        listen 80;
+        server_name  	extranet.netmessage.lan;
+        root 		/var/www/html;
+        index index.php;
+
+        location / {
+    		fastcgi_param PHP_VALUE "upload_max_filesize = 500M \n post_max_size=501M";
+    		try_files	$uri $uri/ @handler;
+    		expires		30d;
+    	}
+
+    	location @handler {
+    		fastcgi_param PHP_VALUE "upload_max_filesize = 500M \n post_max_size=501M";
+    		rewrite ^ /index.php?/$request_uri;
+    	}
+
+        location ~ \.php$ {
+            #include /etc/nginx/fastcgi.conf;
+            try_files $uri =404;
+            fastcgi_pass unix:/run/php/php7.0-fpm.sock;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include fastcgi_params;
+        	}
+    }
+}
